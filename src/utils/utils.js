@@ -34,3 +34,29 @@ export function isKeyword(str) {
 export function isFunction(str) {
   return /\w+\([^)]*\)$/.test(str);
 }
+
+export function encodeBase64(str, urlSafe = false) {
+  const uriEncodedStr = encodeURIComponent(str);
+  const utf8Str = uriEncodedStr.replace(/%([0-9A-F]{2})/g, (_, p1) =>
+    String.fromCharCode(`0x${p1}`),
+  );
+  const result = btoa(utf8Str);
+  if (!urlSafe) {
+    return result;
+  }
+  return result
+    .replace(/\//g, "_") // Replace `/` with `_`
+    .replace(/\+/g, "-") // Replace `+` with `-`
+    .replace(/=+$/, ""); // Remove trailing `=`
+}
+
+export function decodeBase64(str) {
+  // In case of URL safe base64
+  const sanitizedStr = str.replace(/_/g, "/").replace(/-/g, "+");
+  const utf8Str = atob(sanitizedStr);
+  const uriEncodedStr = utf8Str
+    .split("")
+    .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
+    .join("");
+  return decodeURIComponent(uriEncodedStr);
+}
